@@ -1,6 +1,8 @@
 // Dados do usuário
 let userData = {
+    nomeCompleto: '',
     nome: '',
+    sobrenome: '',
     telefone: '',
     email: '',
     empresa: '',
@@ -13,11 +15,19 @@ let userData = {
 // Controle do fluxo da conversa
 let currentStep = 0;
 
+// Função para separar nome e sobrenome
+function separarNome(nomeCompleto) {
+    const partes = nomeCompleto.trim().split(' ');
+    const nome = partes[0];
+    const sobrenome = partes.slice(1).join(' ') || '';
+    return { nome, sobrenome };
+}
+
 // Perguntas do bot
 const conversationFlow = [
     {
-        key: 'nome',
-        question: (data) => "Bom dia! Sou o assistente da Chatvolt. Vou te ajudar a criar um Plano 100% Personalizado de IA para sua empresa - focado em aumentar receita, reduzir custos e multiplicar sua margem.<br><br>Então bora começar! Qual seu nome?"
+        key: 'nomeCompleto',
+        question: (data) => "Bom dia! Sou o assistente da Chatvolt. Vou te ajudar a criar um Plano 100% Personalizado de IA para sua empresa - focado em aumentar receita, reduzir custos e multiplicar sua margem.<br><br>Então bora começar! Qual seu nome completo?"
     },
     {
         key: 'telefone',
@@ -147,8 +157,8 @@ function addCalendly() {
     // Prepara os parâmetros para preencher o formulário do Calendly
     const baseUrl = 'https://calendly.com/d/ctgw-sm7-283/chatvolt-reuniao-comercial';
     
-    // Monta a URL com os parâmetros
-    const calendlyUrl = `${baseUrl}?hide_gdpr_banner=1&primary_color=A556F7&name=${encodeURIComponent(userData.nome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(telefoneFormatado)}&a2=${encodeURIComponent(empresaDetalhada)}`;
+    // Monta a URL com os parâmetros (first_name e last_name para Calendly)
+    const calendlyUrl = `${baseUrl}?hide_gdpr_banner=1&primary_color=A556F7&first_name=${encodeURIComponent(userData.nome)}&last_name=${encodeURIComponent(userData.sobrenome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(telefoneFormatado)}&a2=${encodeURIComponent(empresaDetalhada)}`;
     
     // Cria container para o Calendly
     const calendlyContainer = document.createElement('div');
@@ -158,7 +168,7 @@ function addCalendly() {
         <div class="calendly-wrapper">
             <div class="calendly-inline-widget" 
                  data-url="${calendlyUrl}" 
-                 style="min-width:320px;height:700px;">
+                 style="min-width:400px;height:700px;">
             </div>
         </div>
     `;
@@ -195,11 +205,125 @@ function scrollToBottom() {
     }, 100);
 }
 
+// Função para validar nome
+function validarNome(nome) {
+    if (nome.length < 3) {
+        return { valido: false, mensagem: 'Por favor, digite seu nome completo (mínimo 3 caracteres).' };
+    }
+    if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(nome)) {
+        return { valido: false, mensagem: 'Por favor, digite apenas letras no nome.' };
+    }
+    return { valido: true };
+}
+
+// Função para validar telefone
+function validarTelefone(telefone) {
+    const apenasNumeros = telefone.replace(/\D/g, '');
+    if (apenasNumeros.length < 10 || apenasNumeros.length > 11) {
+        return { valido: false, mensagem: 'Por favor, digite um telefone válido com DDD (ex: 85988889242).' };
+    }
+    return { valido: true };
+}
+
+// Função para validar email
+function validarEmail(email) {
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regexEmail.test(email)) {
+        return { valido: false, mensagem: 'Por favor, digite um e-mail válido (ex: seu@email.com).' };
+    }
+    return { valido: true };
+}
+
+// Função para validar empresa
+function validarEmpresa(empresa) {
+    if (empresa.length < 2) {
+        return { valido: false, mensagem: 'Por favor, digite o nome da sua empresa (mínimo 2 caracteres).' };
+    }
+    return { valido: true };
+}
+
+// Função para validar segmento
+function validarSegmento(segmento) {
+    if (segmento.length < 3) {
+        return { valido: false, mensagem: 'Por favor, digite o segmento da sua empresa (mínimo 3 caracteres).' };
+    }
+    return { valido: true };
+}
+
+// Função para validar cargo
+function validarCargo(cargo) {
+    if (cargo.length < 2) {
+        return { valido: false, mensagem: 'Por favor, digite seu cargo (mínimo 2 caracteres).' };
+    }
+    return { valido: true };
+}
+
+// Função para validar faturamento
+function validarFaturamento(faturamento) {
+    if (faturamento.length < 2) {
+        return { valido: false, mensagem: 'Por favor, digite o faturamento anual da empresa.' };
+    }
+    return { valido: true };
+}
+
+// Função para validar colaboradores
+function validarColaboradores(colaboradores) {
+    if (colaboradores.length < 1) {
+        return { valido: false, mensagem: 'Por favor, digite a quantidade de colaboradores.' };
+    }
+    return { valido: true };
+}
+
+// Função geral de validação
+function validarCampo(key, valor) {
+    switch(key) {
+        case 'nome':
+            return validarNome(valor);
+        case 'telefone':
+            return validarTelefone(valor);
+        case 'email':
+            return validarEmail(valor);
+        case 'empresa':
+            return validarEmpresa(valor);
+        case 'segmento':
+            return validarSegmento(valor);
+        case 'cargo':
+            return validarCargo(valor);
+        case 'faturamento':
+            return validarFaturamento(valor);
+        case 'colaboradores':
+            return validarColaboradores(valor);
+        default:
+            return { valido: true };
+    }
+}
+
 // Função para processar a resposta do usuário
 function processUserInput() {
     const message = userInput.value.trim();
     
     if (message === '') return;
+    
+    // Valida o campo atual antes de prosseguir
+    if (currentStep < conversationFlow.length - 1) {
+        const currentKey = conversationFlow[currentStep].key;
+        const validacao = validarCampo(currentKey, message);
+        
+        if (!validacao.valido) {
+            // Se não for válido, mostra mensagem de erro
+            addUserMessage(message);
+            userInput.value = '';
+            hideInput();
+            
+            addTypingIndicator();
+            setTimeout(() => {
+                addBotMessage(validacao.mensagem);
+                showInput();
+                userInput.focus();
+            }, 1500);
+            return;
+        }
+    }
     
     // Adiciona mensagem do usuário
     addUserMessage(message);
@@ -208,6 +332,13 @@ function processUserInput() {
     if (currentStep < conversationFlow.length - 1) {
         const currentKey = conversationFlow[currentStep].key;
         userData[currentKey] = message;
+        
+        // Se for o nome completo, separar em nome e sobrenome
+        if (currentKey === 'nomeCompleto') {
+            const { nome, sobrenome } = separarNome(message);
+            userData.nome = nome;
+            userData.sobrenome = sobrenome;
+        }
     }
     
     // Limpa o input
@@ -258,4 +389,4 @@ userInput.addEventListener('keypress', (e) => {
 // Foco no input ao carregar
 window.addEventListener('load', () => {
     userInput.focus();
-});
+}); 
