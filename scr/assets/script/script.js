@@ -141,31 +141,14 @@ function addCalendly() {
         ? userData.telefone 
         : `+55${userData.telefone.replace(/\D/g, '')}`;
     
-    // Monta as informações adicionais para o campo de notas/observações
-    const informacoesAdicionais = `
-📊 INFORMAÇÕES DA EMPRESA:
-• Empresa: ${userData.empresa}
-• Segmento: ${userData.segmento}
-• Cargo do contato: ${userData.cargo}
-• Faturamento anual: ${userData.faturamento}
-• Número de colaboradores: ${userData.colaboradores}
-
-🎯 Tipo de uso: Para minha empresa
-    `.trim();
+    // Monta todas as informações de forma organizada para o campo de nome da empresa
+    const empresaDetalhada = `${userData.empresa} - Segmento: ${userData.segmento} - Cargo: ${userData.cargo} - Faturamento: ${userData.faturamento} - Colaboradores: ${userData.colaboradores}`;
     
     // Prepara os parâmetros para preencher o formulário do Calendly
     const baseUrl = 'https://calendly.com/d/ctgw-sm7-283/chatvolt-reuniao-comercial';
-    const params = new URLSearchParams({
-        hide_gdpr_banner: '1',
-        primary_color: 'A556F7',
-        name: userData.nome || '',
-        email: userData.email || '',
-        a1: telefoneFormatado, // Telefone com +55
-        a2: userData.empresa || '', // Nome da empresa
-        a3: informacoesAdicionais // Todas as informações adicionais
-    });
     
-    const calendlyUrl = `${baseUrl}?${params.toString()}`;
+    // Monta a URL com os parâmetros
+    const calendlyUrl = `${baseUrl}?hide_gdpr_banner=1&primary_color=A556F7&name=${encodeURIComponent(userData.nome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(telefoneFormatado)}&a2=${encodeURIComponent(empresaDetalhada)}`;
     
     // Cria container para o Calendly
     const calendlyContainer = document.createElement('div');
@@ -196,7 +179,7 @@ function addCalendly() {
     // Salva os dados do usuário (aqui você pode enviar para um servidor/API)
     console.log('Dados do usuário coletados:', userData);
     console.log('Telefone formatado:', telefoneFormatado);
-    console.log('Informações adicionais:', informacoesAdicionais);
+    console.log('Empresa com informações:', empresaDetalhada);
     
     // Você pode fazer uma chamada API aqui para salvar os dados
     // saveUserData(userData);
