@@ -270,7 +270,7 @@ function validarTelefone(telefone) {
     return { valido: true };
 }
 
-
+// Função para validar email
 function validarEmail(email) {
     const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regexEmail.test(email)) {
@@ -279,7 +279,7 @@ function validarEmail(email) {
     return { valido: true };
 }
 
-
+// Função para validar empresa
 function validarEmpresa(empresa) {
     if (empresa.length < 2) {
         return { valido: false, mensagem: 'Por favor, digite o nome da sua empresa (mínimo 2 caracteres).' };
@@ -287,7 +287,7 @@ function validarEmpresa(empresa) {
     return { valido: true };
 }
 
-
+// Função para validar segmento
 function validarSegmento(segmento) {
     if (segmento.length < 3) {
         return { valido: false, mensagem: 'Por favor, digite o segmento da sua empresa (mínimo 3 caracteres).' };
