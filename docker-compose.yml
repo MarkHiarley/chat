@@ -1,0 +1,11 @@
+
+
+services:
+  chatvolt-bot:
+    image: nginx:alpine
+    container_name: chatvolt-comercial-bot
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/usr/share/nginx/html
+    restart: unless-stopped

@@ -12,10 +12,9 @@ let userData = {
     colaboradores: ''
 };
 
-// Controle do fluxo da conversa
+
 let currentStep = 0;
 
-// Função para separar nome e sobrenome
 function separarNome(nomeCompleto) {
     const partes = nomeCompleto.trim().split(' ');
     const nome = partes[0];
@@ -23,43 +22,52 @@ function separarNome(nomeCompleto) {
     return { nome, sobrenome };
 }
 
-// Perguntas do bot
+
 const conversationFlow = [
     {
         key: 'nomeCompleto',
-        question: (data) => "Bom dia! Sou o assistente da Chatvolt. Vou te ajudar a criar um Plano 100% Personalizado de IA para sua empresa - focado em aumentar receita, reduzir custos e multiplicar sua margem.<br><br>Então bora começar! Qual seu nome completo?"
+        question: (data) => "Bom dia! Sou o assistente da Chatvolt. Vou te ajudar a criar um Plano 100% Personalizado de IA para sua empresa - focado em aumentar receita, reduzir custos e multiplicar sua margem.<br><br>Então bora começar! Qual seu nome completo?",
+        placeholder: "Digite seu nome completo..."
     },
     {
         key: 'telefone',
-        question: (data) => `Prazer, ${data.nome}! Qual seu telefone?`
+        question: (data) => `Prazer, ${data.nome}! Qual seu telefone?`,
+        placeholder: "Digite seu telefone com DDD (ex: 85999999999)..."
     },
     {
         key: 'email',
-        question: (data) => `Perfeito, ${data.nome}! Confirmado seu número de contato. Para darmos o próximo passo, qual seria o seu melhor e-mail, por favor. Qual seu e-mail?`
+        question: (data) => `Perfeito, ${data.nome}! Confirmado seu número de contato. Para darmos o próximo passo, qual seria o seu melhor e-mail, por favor. Qual seu e-mail?`,
+        placeholder: "Digite seu e-mail (ex: seu@email.com)..."
     },
     {
         key: 'empresa',
-        question: (data) => "Ótimo! Qual o nome da sua empresa?"
+        question: (data) => "Ótimo! Qual o nome da sua empresa?",
+        placeholder: "Digite o nome da sua empresa..."
     },
     {
         key: 'segmento',
-        question: (data) => `Legal, ${data.empresa}! Qual o segmento da sua empresa?`
+        question: (data) => `Legal, ${data.empresa}! Qual o segmento da sua empresa?`,
+        placeholder: "Digite o segmento (ex: Tecnologia, Saúde, Educação)..."
     },
     {
         key: 'cargo',
-        question: (data) => `Ótimo! E qual é o seu cargo na ${data.empresa}?`
+        question: (data) => `Ótimo! E qual é o seu cargo na ${data.empresa}?`,
+        placeholder: "Digite seu cargo (ex: CEO, Diretor, Gerente)..."
     },
     {
         key: 'faturamento',
-        question: (data) => "Excelente! Alguém com sua visão estratégica consegue impulsionar a inovação e ver o impacto rápido no negócio. Estamos preparando algo especial para você! Hoje, qual é o seu faturamento anual?"
+        question: (data) => "Excelente! Alguém com sua visão estratégica consegue impulsionar a inovação e ver o impacto rápido no negócio. Estamos preparando algo especial para você! Hoje, qual é o seu faturamento anual?",
+        placeholder: "Digite o faturamento anual (ex: R$ 500k, R$ 1M)..."
     },
     {
         key: 'colaboradores',
-        question: (data) => "Excelente! Com essas informações, já temos dados para seu diagnóstico. Quantos colaboradores a empresa possui?"
+        question: (data) => "Excelente! Com essas informações, já temos dados para seu diagnóstico. Quantos colaboradores a empresa possui?",
+        placeholder: "Digite a quantidade de colaboradores..."
     },
     {
         key: 'final',
-        question: (data) => `${data.nome}, com sua visão de ${data.cargo}, sua empresa tem um potencial incrível para otimização com IA. Identificamos uma economia estimada de R$ 8.000 a R$ 15.000 mensais com automações estratégicas! Temos poucas vagas restantes para diagnósticos de alto nível esta semana, então garanta já sua sessão estratégica com nosso time.<br><br>Após agendar, você receberá por e-mail e WhatsApp um Plano Personalizado de IA para a ${data.empresa} - com diagnóstico exclusivo e oportunidades de automação.<br><br>Escolha o melhor horário abaixo:`
+        question: (data) => `${data.nome}, com sua visão de ${data.cargo}, sua empresa tem um potencial incrível para otimização com IA. Identificamos uma economia estimada de R$ 8.000 a R$ 15.000 mensais com automações estratégicas! Temos poucas vagas restantes para diagnósticos de alto nível esta semana, então garanta já sua sessão estratégica com nosso time.<br><br>Após agendar, você receberá por e-mail e WhatsApp um Plano Personalizado de IA para a ${data.empresa} - com diagnóstico exclusivo e oportunidades de automação.<br><br>Escolha o melhor horário abaixo:`,
+        placeholder: ""
     }
 ];
 
@@ -68,7 +76,14 @@ const messagesContainer = document.getElementById('messages-container');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 
-// Função para adicionar mensagem do usuário
+
+function atualizarPlaceholder() {
+    if (currentStep < conversationFlow.length) {
+        userInput.placeholder = conversationFlow[currentStep].placeholder || '';
+    }
+}
+
+
 function addUserMessage(message) {
     const userMessageContainer = document.createElement('div');
     userMessageContainer.className = 'user-message-container';
@@ -83,7 +98,7 @@ function addUserMessage(message) {
     scrollToBottom();
 }
 
-// Função para adicionar indicador de "digitando..."
+
 function addTypingIndicator() {
     const typingIndicator = document.createElement('div');
     typingIndicator.className = 'reponse typing-indicator';
@@ -104,7 +119,7 @@ function addTypingIndicator() {
     scrollToBottom();
 }
 
-// Função para remover indicador de "digitando..."
+
 function removeTypingIndicator() {
     const typingIndicator = document.getElementById('typing-indicator');
     if (typingIndicator) {
@@ -112,19 +127,18 @@ function removeTypingIndicator() {
     }
 }
 
-// Função para esconder o input
 function hideInput() {
     const inputContainer = document.querySelector('.input-container');
     inputContainer.style.display = 'none';
 }
 
-// Função para mostrar o input
+
 function showInput() {
     const inputContainer = document.querySelector('.input-container');
     inputContainer.style.display = 'flex';
 }
 
-// Função para adicionar mensagem do bot
+
 function addBotMessage(message) {
     removeTypingIndicator();
     
@@ -142,25 +156,67 @@ function addBotMessage(message) {
     scrollToBottom();
 }
 
-// Função para adicionar o Calendly
+async function salvarNoGoogleSheets(dados) {
+
+    const GOOGLE_SCRIPT_URL = process.env.PLANILHAURL || window.ENV?.PLANILHAURL || '';
+    
+    if (!GOOGLE_SCRIPT_URL) {
+        console.error('URL da planilha não configurada. Configure a variável PLANILHAURL no arquivo .env');
+        return false;
+    }
+    
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dados)
+        });
+        
+        console.log('Dados enviados para Google Sheets com sucesso!');
+        return true;
+    } catch (error) {
+        console.error('Erro ao enviar dados para Google Sheets:', error);
+        return false;
+    }
+}
+
 function addCalendly() {
     removeTypingIndicator();
     
-    // Formata o telefone com +55
+
     const telefoneFormatado = userData.telefone.startsWith('+55') 
         ? userData.telefone 
         : `+55${userData.telefone.replace(/\D/g, '')}`;
     
-    // Monta todas as informações de forma organizada para o campo de nome da empresa
+ 
     const empresaDetalhada = `${userData.empresa} - Segmento: ${userData.segmento} - Cargo: ${userData.cargo} - Faturamento: ${userData.faturamento} - Colaboradores: ${userData.colaboradores}`;
     
-    // Prepara os parâmetros para preencher o formulário do Calendly
+   
+    const dadosParaSheets = {
+        nome: userData.nome,
+        sobrenome: userData.sobrenome,
+        email: userData.email,
+        telefone: telefoneFormatado,
+        empresa: userData.empresa,
+        segmento: userData.segmento,
+        cargo: userData.cargo,
+        faturamento: userData.faturamento,
+        colaboradores: userData.colaboradores
+    };
+    
+
+    salvarNoGoogleSheets(dadosParaSheets);
+    
+
     const baseUrl = 'https://calendly.com/d/ctgw-sm7-283/chatvolt-reuniao-comercial';
     
-    // Monta a URL com os parâmetros (first_name e last_name para Calendly)
+
     const calendlyUrl = `${baseUrl}?hide_gdpr_banner=1&primary_color=A556F7&first_name=${encodeURIComponent(userData.nome)}&last_name=${encodeURIComponent(userData.sobrenome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(telefoneFormatado)}&a2=${encodeURIComponent(empresaDetalhada)}`;
     
-    // Cria container para o Calendly
+ 
     const calendlyContainer = document.createElement('div');
     calendlyContainer.className = 'calendly-container';
     
@@ -168,14 +224,14 @@ function addCalendly() {
         <div class="calendly-wrapper">
             <div class="calendly-inline-widget" 
                  data-url="${calendlyUrl}" 
-                 style="min-width:400px;height:700px;">
+                 style="min-width:320px;height:700px;">
             </div>
         </div>
     `;
     
     messagesContainer.appendChild(calendlyContainer);
     
-    // Carrega o script do Calendly se ainda não foi carregado
+
     if (!document.querySelector('script[src*="calendly"]')) {
         const script = document.createElement('script');
         script.type = 'text/javascript';
@@ -186,16 +242,14 @@ function addCalendly() {
     
     scrollToBottom();
     
-    // Salva os dados do usuário (aqui você pode enviar para um servidor/API)
+
     console.log('Dados do usuário coletados:', userData);
     console.log('Telefone formatado:', telefoneFormatado);
     console.log('Empresa com informações:', empresaDetalhada);
-    
-    // Você pode fazer uma chamada API aqui para salvar os dados
-    // saveUserData(userData);
+    console.log('Dados enviados para Google Sheets:', dadosParaSheets);
 }
 
-// Função para rolar para o final
+
 function scrollToBottom() {
     setTimeout(() => {
         window.scrollTo({
@@ -205,7 +259,7 @@ function scrollToBottom() {
     }, 100);
 }
 
-// Função para validar nome
+
 function validarNome(nome) {
     if (nome.length < 3) {
         return { valido: false, mensagem: 'Por favor, digite seu nome completo (mínimo 3 caracteres).' };
@@ -234,7 +288,7 @@ function validarEmail(email) {
     return { valido: true };
 }
 
-// Função para validar empresa
+
 function validarEmpresa(empresa) {
     if (empresa.length < 2) {
         return { valido: false, mensagem: 'Por favor, digite o nome da sua empresa (mínimo 2 caracteres).' };
@@ -277,7 +331,7 @@ function validarColaboradores(colaboradores) {
 // Função geral de validação
 function validarCampo(key, valor) {
     switch(key) {
-        case 'nome':
+        case 'nomeCompleto':
             return validarNome(valor);
         case 'telefone':
             return validarTelefone(valor);
@@ -320,6 +374,7 @@ function processUserInput() {
                 addBotMessage(validacao.mensagem);
                 showInput();
                 userInput.focus();
+                atualizarPlaceholder();
             }, 1500);
             return;
         }
@@ -333,7 +388,7 @@ function processUserInput() {
         const currentKey = conversationFlow[currentStep].key;
         userData[currentKey] = message;
         
-        // Se for o nome completo, separar em nome e sobrenome
+        // Se for o nome completo, separa em nome e sobrenome
         if (currentKey === 'nomeCompleto') {
             const { nome, sobrenome } = separarNome(message);
             userData.nome = nome;
@@ -372,12 +427,13 @@ function processUserInput() {
                 // Mostra o input novamente
                 showInput();
                 userInput.focus();
+                atualizarPlaceholder();
             }
         }, 2000);
     }
 }
 
-// Event listeners
+
 sendButton.addEventListener('click', processUserInput);
 
 userInput.addEventListener('keypress', (e) => {
@@ -386,7 +442,7 @@ userInput.addEventListener('keypress', (e) => {
     }
 });
 
-// Foco no input ao carregar
 window.addEventListener('load', () => {
     userInput.focus();
-}); 
+    atualizarPlaceholder();
+});
