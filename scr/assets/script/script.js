@@ -1,4 +1,4 @@
-// Dados do usuário
+
 let userData = {
     nomeCompleto: '',
     nome: '',
@@ -12,10 +12,9 @@ let userData = {
     colaboradores: ''
 };
 
-// Controle do fluxo da conversa
+
 let currentStep = 0;
 
-// Função para separar nome e sobrenome
 function separarNome(nomeCompleto) {
     const partes = nomeCompleto.trim().split(' ');
     const nome = partes[0];
@@ -72,19 +71,18 @@ const conversationFlow = [
     }
 ];
 
-// Elementos DOM
+
 const messagesContainer = document.getElementById('messages-container');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 
-// Função para atualizar o placeholder
 function atualizarPlaceholder() {
     if (currentStep < conversationFlow.length) {
         userInput.placeholder = conversationFlow[currentStep].placeholder || '';
     }
 }
 
-// Função para adicionar mensagem do usuário
+
 function addUserMessage(message) {
     const userMessageContainer = document.createElement('div');
     userMessageContainer.className = 'user-message-container';
@@ -99,7 +97,6 @@ function addUserMessage(message) {
     scrollToBottom();
 }
 
-// Função para adicionar indicador de "digitando..."
 function addTypingIndicator() {
     const typingIndicator = document.createElement('div');
     typingIndicator.className = 'reponse typing-indicator';
@@ -120,7 +117,7 @@ function addTypingIndicator() {
     scrollToBottom();
 }
 
-// Função para remover indicador de "digitando..."
+
 function removeTypingIndicator() {
     const typingIndicator = document.getElementById('typing-indicator');
     if (typingIndicator) {
@@ -128,19 +125,17 @@ function removeTypingIndicator() {
     }
 }
 
-// Função para esconder o input
+
 function hideInput() {
     const inputContainer = document.querySelector('.input-container');
     inputContainer.style.display = 'none';
 }
 
-// Função para mostrar o input
 function showInput() {
     const inputContainer = document.querySelector('.input-container');
     inputContainer.style.display = 'flex';
 }
 
-// Função para adicionar mensagem do bot
 function addBotMessage(message) {
     removeTypingIndicator();
     
@@ -158,18 +153,12 @@ function addBotMessage(message) {
     scrollToBottom();
 }
 
-// Função para salvar dados no Google Sheets
 async function salvarNoGoogleSheets(dados) {
-    // Pega a URL da variável de ambiente
-    const GOOGLE_SCRIPT_URL = process.env.PLANILHAURL || window.ENV?.PLANILHAURL || '';
-    
-    if (!GOOGLE_SCRIPT_URL) {
-        console.error('URL da planilha não configurada. Configure a variável PLANILHAURL no arquivo .env');
-        return false;
-    }
+  
+   
     
     try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
+        const response = await fetch("https://script.google.com/macros/s/AKfycby5iXDYpoozRxG-ECEIQ_yWUS9A47Cik4HfFHivAb2BkZYwC185lRSKAzVj_m3S68OO/exec", {
             method: 'POST',
             mode: 'no-cors',
             headers: {
@@ -186,19 +175,18 @@ async function salvarNoGoogleSheets(dados) {
     }
 }
 
-// Função para adicionar o Calendly
+
 function addCalendly() {
     removeTypingIndicator();
     
-    // Formata o telefone com +55
+
     const telefoneFormatado = userData.telefone.startsWith('+55') 
         ? userData.telefone 
         : `+55${userData.telefone.replace(/\D/g, '')}`;
     
-    // Monta todas as informações de forma organizada para o campo de nome da empresa
+ 
     const empresaDetalhada = `${userData.empresa} - Segmento: ${userData.segmento} - Cargo: ${userData.cargo} - Faturamento: ${userData.faturamento} - Colaboradores: ${userData.colaboradores}`;
-    
-    // Prepara os dados para enviar ao Google Sheets
+
     const dadosParaSheets = {
         nome: userData.nome,
         sobrenome: userData.sobrenome,
@@ -211,16 +199,16 @@ function addCalendly() {
         colaboradores: userData.colaboradores
     };
     
-    // Envia os dados para o Google Sheets
+   
     salvarNoGoogleSheets(dadosParaSheets);
     
-    // Prepara os parâmetros para preencher o formulário do Calendly
+  
     const baseUrl = 'https://calendly.com/d/ctgw-sm7-283/chatvolt-reuniao-comercial';
     
-    // Monta a URL com os parâmetros
+    
     const calendlyUrl = `${baseUrl}?hide_gdpr_banner=1&primary_color=A556F7&first_name=${encodeURIComponent(userData.nome)}&last_name=${encodeURIComponent(userData.sobrenome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(telefoneFormatado)}&a2=${encodeURIComponent(empresaDetalhada)}`;
     
-    // Cria container para o Calendly
+  
     const calendlyContainer = document.createElement('div');
     calendlyContainer.className = 'calendly-container';
     
@@ -235,7 +223,7 @@ function addCalendly() {
     
     messagesContainer.appendChild(calendlyContainer);
     
-    // Carrega o script do Calendly se ainda não foi carregado
+   
     if (!document.querySelector('script[src*="calendly"]')) {
         const script = document.createElement('script');
         script.type = 'text/javascript';
@@ -246,14 +234,14 @@ function addCalendly() {
     
     scrollToBottom();
     
-    // Salva os dados do usuário (aqui você pode enviar para um servidor/API)
+   
     console.log('Dados do usuário coletados:', userData);
     console.log('Telefone formatado:', telefoneFormatado);
     console.log('Empresa com informações:', empresaDetalhada);
     console.log('Dados enviados para Google Sheets:', dadosParaSheets);
 }
 
-// Função para rolar para o final
+
 function scrollToBottom() {
     setTimeout(() => {
         window.scrollTo({
@@ -274,7 +262,6 @@ function validarNome(nome) {
     return { valido: true };
 }
 
-// Função para validar telefone
 function validarTelefone(telefone) {
     const apenasNumeros = telefone.replace(/\D/g, '');
     if (apenasNumeros.length < 10 || apenasNumeros.length > 11) {
@@ -283,7 +270,7 @@ function validarTelefone(telefone) {
     return { valido: true };
 }
 
-// Função para validar email
+
 function validarEmail(email) {
     const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regexEmail.test(email)) {
@@ -292,7 +279,7 @@ function validarEmail(email) {
     return { valido: true };
 }
 
-// Função para validar empresa
+
 function validarEmpresa(empresa) {
     if (empresa.length < 2) {
         return { valido: false, mensagem: 'Por favor, digite o nome da sua empresa (mínimo 2 caracteres).' };
@@ -300,7 +287,7 @@ function validarEmpresa(empresa) {
     return { valido: true };
 }
 
-// Função para validar segmento
+
 function validarSegmento(segmento) {
     if (segmento.length < 3) {
         return { valido: false, mensagem: 'Por favor, digite o segmento da sua empresa (mínimo 3 caracteres).' };
@@ -437,7 +424,6 @@ function processUserInput() {
     }
 }
 
-// Event listeners
 sendButton.addEventListener('click', processUserInput);
 
 userInput.addEventListener('keypress', (e) => {
@@ -446,7 +432,6 @@ userInput.addEventListener('keypress', (e) => {
     }
 });
 
-// Foco no input ao carregar
 window.addEventListener('load', () => {
     userInput.focus();
     atualizarPlaceholder();
