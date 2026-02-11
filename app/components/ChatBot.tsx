@@ -171,6 +171,31 @@ export function ChatBot() {
     feedback?: string 
   }> => {
     const prompts: Record<string, string> = {
+      nomeCompleto: `
+Analise esta resposta de nome completo: "${userInput}"
+
+A pessoa respondeu à pergunta sobre NOME COMPLETO (nome e sobrenome).
+
+Tarefa:
+1. Verifique se há pelo menos nome e sobrenome (mínimo 2 palavras)
+2. Corrija capitalização: cada palavra deve começar com maiúscula
+3. Remova números, caracteres especiais ou emojis
+4. Se for apenas um nome (sem sobrenome), peça o nome completo
+5. Se for texto aleatório sem sentido, peça para digitar o nome novamente
+
+IMPORTANTE: Corrija nomes com capitalização errada automaticamente:
+- "joão silva" → "João Silva" ✅
+- "MARIA SANTOS" → "Maria Santos" ✅
+- "pedro DE oliveira" → "Pedro de Oliveira" ✅
+- "ana" → INVÁLIDO (apenas um nome) ❌
+- "123 teste" → INVÁLIDO (não é um nome) ❌
+
+Responda APENAS neste formato JSON:
+{"isValid": true, "normalizedValue": "Nome Completo Corrigido", "feedback": ""}
+
+Se inválido:
+{"isValid": false, "normalizedValue": "", "feedback": "Por favor, digite seu nome completo (nome e sobrenome). Exemplo: João Silva"}
+`,
       telefone: `
 Analise esta resposta de telefone: "${userInput}"
 
