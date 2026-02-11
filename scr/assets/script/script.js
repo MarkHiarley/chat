@@ -184,8 +184,8 @@ function addCalendly() {
         ? userData.telefone 
         : `+55${userData.telefone.replace(/\D/g, '')}`;
     
- 
-    const empresaDetalhada = `${userData.empresa} - Segmento: ${userData.segmento} - Cargo: ${userData.cargo} - Faturamento: ${userData.faturamento} - Colaboradores: ${userData.colaboradores}`;
+    // Formata todos os dados da empresa em uma string organizada
+    const dadosCompletos = `Empresa: ${userData.empresa} | Segmento: ${userData.segmento} | Cargo: ${userData.cargo} | Faturamento: ${userData.faturamento} | Colaboradores: ${userData.colaboradores} | Telefone: ${telefoneFormatado}`;
 
     const dadosParaSheets = {
         nome: userData.nome,
@@ -206,7 +206,7 @@ function addCalendly() {
     const baseUrl = 'https://calendly.com/d/ctgw-sm7-283/chatvolt-reuniao-comercial';
     
     
-    const calendlyUrl = `${baseUrl}?hide_gdpr_banner=1&primary_color=A556F7&first_name=${encodeURIComponent(userData.nome)}&last_name=${encodeURIComponent(userData.sobrenome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(telefoneFormatado)}&a2=${encodeURIComponent(empresaDetalhada)}`;
+    const calendlyUrl = `${baseUrl}?hide_gdpr_banner=1&primary_color=A556F7&first_name=${encodeURIComponent(userData.nome)}&last_name=${encodeURIComponent(userData.sobrenome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(telefoneFormatado)}&a2=${encodeURIComponent(dadosCompletos)}`;
     
   
     const calendlyContainer = document.createElement('div');
@@ -237,7 +237,7 @@ function addCalendly() {
    
     console.log('Dados do usuário coletados:', userData);
     console.log('Telefone formatado:', telefoneFormatado);
-    console.log('Empresa com informações:', empresaDetalhada);
+    console.log('Dados completos para Calendly:', dadosCompletos);
     console.log('Dados enviados para Google Sheets:', dadosParaSheets);
 }
 
