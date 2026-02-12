@@ -35,7 +35,7 @@ export function ChatBot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'bot' as const,
-      content: 'Olá! 👋\n\nQuero entender um pouco do seu contexto para te ajudar a desenhar a melhor estratégia para sua empresa, pensando em crescimento e otimização de custos.\n\nAssumimos toda a complexidade técnica e operacional para você focar no que importa: resultados.\n\nPara começar, qual seu nome completo?'
+      content: 'Oi! 👋\n\nEmpresas que usam IA estrategicamente estão reduzindo custos em até 40% e aumentando faturamento sem contratar mais.\n\nQuer descobrir como isso pode transformar seu negócio?\n\nPra começar, qual seu nome completo?'
     }
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -460,8 +460,26 @@ Exemplos válidos: "50 pessoas", "aproximadamente 100", "entre 80 e 90", "120"
                 </div>
               </div>
             ) : (
-              <div className="bg-white text-[#1e293b] rounded-[20px] py-4 px-6 shadow-lg max-w-[80%] break-words">
-                {message.content}
+              <div className="flex items-start gap-4 max-w-full justify-end">
+                <div className="bg-white text-[#1e293b] rounded-[20px] py-4 px-6 shadow-lg max-w-[80%] break-words">
+                  {message.content}
+                </div>
+                <div className="w-[50px] h-[50px] rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0">
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="white" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
               </div>
             )}
           </div>
