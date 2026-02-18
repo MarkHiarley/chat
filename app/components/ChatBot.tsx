@@ -430,7 +430,7 @@ Exemplos válidos: "50 pessoas", "aproximadamente 100", "entre 80 e 90", "120"
                   height={50}
                   className="rounded-full flex-shrink-0"
                 />
-                <div className="bg-[#1e293b] text-white rounded-lg p-5 shadow-lg max-w-full whitespace-pre-wrap">
+                <div className="bg-[#1e293b] text-white rounded-[20px] p-5 shadow-lg max-w-full whitespace-pre-wrap">
                   {message.content}
                 </div>
               </div>
@@ -452,7 +452,7 @@ Exemplos válidos: "50 pessoas", "aproximadamente 100", "entre 80 e 90", "120"
               height={50}
               className="rounded-full"
             />
-            <div className="bg-[#1e293b] text-white rounded-lg p-5 shadow-lg">
+            <div className="bg-[#1e293b] text-white rounded-[20px] p-5 shadow-lg">
               <div className="flex gap-2">
                 <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
                 <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
@@ -472,13 +472,11 @@ Exemplos válidos: "50 pessoas", "aproximadamente 100", "entre 80 e 90", "120"
               height={50}
               className="rounded-full flex-shrink-0"
             />
-            <div className="bg-[#1e293b] rounded-lg shadow-lg overflow-hidden flex-1">
-              <div 
-                className="calendly-inline-widget" 
-                data-url={`https://calendly.com/d/ctgw-sm7-283/chatvolt-reuniao-comercial?hide_gdpr_banner=1&primary_color=A556F7&text_color=1e293b&first_name=${encodeURIComponent(userData.nome)}&last_name=${encodeURIComponent(userData.sobrenome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(userData.telefone)}&a2=${encodeURIComponent(`Empresa: ${userData.empresa} | Segmento: ${userData.segmento} | Faturamento: ${userData.faturamento} | Colaboradores: ${userData.colaboradores}`)}`}
-                style={{ minWidth: '320px', height: '700px', width: '100%' }}
-              />
-            </div>
+            <div 
+              className="calendly-inline-widget bg-[#1e293b] rounded-[20px] shadow-lg overflow-hidden flex-1" 
+              data-url={`https://calendly.com/d/ctgw-sm7-283/chatvolt-reuniao-comercial?hide_gdpr_banner=1&primary_color=A556F7&text_color=1e293b&first_name=${encodeURIComponent(userData.nome)}&last_name=${encodeURIComponent(userData.sobrenome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(userData.telefone)}&a2=${encodeURIComponent(`Empresa: ${userData.empresa} | Segmento: ${userData.segmento} | Faturamento: ${userData.faturamento} | Colaboradores: ${userData.colaboradores}`)}`}
+              style={{ minWidth: '320px', height: '750px', width: '100%' }}
+            />
           </div>
         )}
 
