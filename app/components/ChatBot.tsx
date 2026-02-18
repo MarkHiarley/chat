@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { sendMessageToGemini } from '../lib/gemini';
 import {
   validateNomeCompleto,
   validatePhone,
@@ -136,6 +135,192 @@ export function ChatBot() {
     }
   };
 
+  // Função para normalizar email
+  const normalizarEmail = (email: string): string => {
+    return email.toLowerCase().trim();
+  };
+
+  // Função para normalizar nome de empresa
+  const normalizarEmpresa = (empresa: string): string => {
+    return empresa
+      .trim()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  // Função para normalizar segmento
+  const normalizarSegmento = (segmento: string): string => {
+    return segmento.charAt(0).toUpperCase() + segmento.slice(1).toLowerCase();
+  };
+
+  // Função para normalizar faturamento
+  const normalizarFaturamento = (faturamento: string): string => {
+    const input = faturamento.toLowerCase().replace(/\s+/g, ' ').trim();
+    
+    // Extrai números
+    const numero = parseFloat(input.replace(/[^\d,.]/g, '').replace(',', '.'));
+    
+    if (isNaN(numero)) return faturamento;
+    
+    // Detecta escala (k, mil, milhão, m, etc)
+    let valor = numero;
+    
+    if (input.includes('milhão') || input.includes('milhões') || input.includes('m') && !input.includes('mil')) {
+      valor = numero * 1000000;
+    } else if (input.includes('mil') || input.includes('k')) {
+      valor = numero * 1000;
+    }
+    
+    // Formata para R$
+    return `R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  };
+
+  // Função para normalizar colaboradores
+  const normalizarColaboradores = (colaboradores: string): string => {
+    const cleanInput = colaboradores.replace(/\D/g, '');
+    const numero = parseInt(cleanInput);
+    
+    if (isNaN(numero) || numero < 1) return colaboradores;
+    
+    return numero.toString();
+  };
+
+  // Nova função: Interpreta e valida a resposta do usuário SEM IA
+  const interpretUserResponse = async (step: string, userInput: string, data: UserData): Promise<{ 
+    isValid: boolean; 
+    normalizedValue: string; 
+    feedback?: string;
+    shouldBlock?: boolean;
+  }> => {
+    
+    switch(step) {
+      case 'telefone': {
+        const cleanPhone = userInput.replace(/\D/g, '');
+        
+        if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+          return {
+            isValid: false,
+            normalizedValue: userInput,
+            feedback: 'Por favor, insira um telefone válido com DDD. Exemplo: (11) 99999-9999 ou 11999999999'
+          };
+        }
+        
+        return { 
+          isValid: true, 
+          normalizedValue: normalizarTelefone(userInput)
+        };
+      }
+
+      case 'email': {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!emailRegex.test(userInput)) {
+          return {
+            isValid: false,
+            normalizedValue: userInput,
+            feedback: 'Por favor, insira um e-mail válido. Exemplo: seu@email.com'
+          };
+        }
+        
+        // Lista de emails pessoais
+        const emailsPessoais = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'yahoo.com.br', 'live.com', 'icloud.com', 'me.com'];
+        const domain = userInput.split('@')[1]?.toLowerCase();
+        
+        if (emailsPessoais.includes(domain)) {
+          return {
+            isValid: false,
+            normalizedValue: userInput,
+            feedback: 'Por favor, use seu e-mail corporativo da empresa. E-mails pessoais (Gmail, Hotmail, etc) não são aceitos.'
+          };
+        }
+        
+        return { 
+          isValid: true, 
+          normalizedValue: normalizarEmail(userInput)
+        };
+      }
+
+      case 'empresa': {
+        if (userInput.trim().length < 2) {
+          return {
+            isValid: false,
+            normalizedValue: userInput,
+            feedback: 'Por favor, informe o nome da sua empresa (mínimo 2 caracteres).'
+          };
+        }
+        
+        return { 
+          isValid: true, 
+          normalizedValue: normalizarEmpresa(userInput)
+        };
+      }
+
+      case 'segmento': {
+        if (userInput.trim().length < 3) {
+          return {
+            isValid: false,
+            normalizedValue: userInput,
+            feedback: 'Por favor, informe o segmento da empresa (mínimo 3 caracteres). Exemplo: Tecnologia, Varejo, Saúde'
+          };
+        }
+        
+        return { 
+          isValid: true, 
+          normalizedValue: normalizarSegmento(userInput)
+        };
+      }
+
+      case 'faturamento': {
+        const contemNumero = /\d/.test(userInput);
+        
+        if (!contemNumero) {
+          return {
+            isValid: false,
+            normalizedValue: userInput,
+            feedback: 'Por favor, informe o faturamento anual. Exemplo: R$ 500.000, 500k, 1 milhão'
+          };
+        }
+        
+        return { 
+          isValid: true, 
+          normalizedValue: normalizarFaturamento(userInput)
+        };
+      }
+
+      case 'colaboradores': {
+        const cleanInput = userInput.replace(/\D/g, '');
+        const numero = parseInt(cleanInput);
+        
+        if (isNaN(numero) || numero < 1 || cleanInput.length === 0) {
+          return {
+            isValid: false,
+            normalizedValue: userInput,
+            feedback: 'Por favor, informe um número válido de colaboradores. Exemplo: 50, 100, etc.'
+          };
+        }
+        
+        // Validação ICP: bloqueia se tiver menos de 6 colaboradores
+        if (numero < 6) {
+          return {
+            isValid: false,
+            normalizedValue: numero.toString(),
+            shouldBlock: true,
+            feedback: 'Entendo! No momento, nossas soluções são focadas em empresas com estrutura um pouco maior (a partir de 6 colaboradores). Quando sua equipe crescer, teremos prazer em apresentar como a IA pode impulsionar seus resultados! 💪'
+          };
+        }
+        
+        return { 
+          isValid: true, 
+          normalizedValue: numero.toString()
+        };
+      }
+
+      default:
+        return { isValid: true, normalizedValue: userInput };
+    }
+  };
+
   const getNextQuestion = (step: string, data: UserData): string => {
     switch (step) {
       case 'telefone':
@@ -164,149 +349,6 @@ export function ChatBot() {
     }
   };
 
-  // Nova função: Interpreta e valida a resposta do usuário com IA
-  const interpretUserResponse = async (step: string, userInput: string, data: UserData): Promise<{ 
-    isValid: boolean; 
-    normalizedValue: string; 
-    feedback?: string 
-  }> => {
-    const prompts: Record<string, string> = {
-      telefone: `
-Analise esta resposta de telefone: "${userInput}"
-
-Tarefa:
-1. Extraia APENAS os números do telefone
-2. Verifique se tem entre 10-11 dígitos
-3. Normalize para formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
-4. Se NÃO for um telefone válido, retorne feedback educado
-
-IMPORTANTE: Aceite números com ou sem formatação. Exemplos válidos:
-- 88981899242 → (88) 98189-9242 ✅
-- 8898189-9242 → (88) 98189-9242 ✅
-- (88) 98189-9242 → (88) 98189-9242 ✅
-- 88 9 81899242 → (88) 98189-9242 ✅
-
-Responda APENAS neste formato JSON:
-{"isValid": true, "normalizedValue": "(88) 98189-9242", "feedback": ""}
-
-Se inválido (menos de 10 dígitos, texto sem sentido):
-{"isValid": false, "normalizedValue": "", "feedback": "Por favor, insira um telefone válido com DDD. Exemplo: (11) 99999-9999"}
-`,
-      email: `
-Analise esta resposta de email: "${userInput}"
-
-A pessoa respondeu à pergunta sobre EMAIL CORPORATIVO.
-
-Tarefa:
-1. Verifique se é um email válido
-2. Se for email pessoal (gmail, hotmail, yahoo, outlook.com), marque como inválido
-3. Normalize para lowercase
-4. Se inválido, explique o motivo de forma educada
-
-Responda APENAS neste formato JSON:
-{"isValid": true/false, "normalizedValue": "email normalizado", "feedback": "mensagem se inválido"}
-`,
-      empresa: `
-Analise esta resposta sobre nome da empresa: "${userInput}"
-
-Tarefa:
-1. Identifique se é um nome de empresa válido
-2. Normalize o nome (primeira letra maiúscula)
-3. Se a resposta for vaga ou irrelevante, peça esclarecimento
-
-Responda APENAS neste formato JSON:
-{"isValid": true/false, "normalizedValue": "nome normalizado", "feedback": "mensagem se inválido"}
-
-Exemplos de válidos: "Amazon", "Mercado Livre", "XYZ Tecnologia"
-Exemplos de inválidos: "trabalho numa empresa", "não posso falar", "empresa boa"
-`,
-      segmento: `
-Analise esta resposta sobre segmento de atuação: "${userInput}"
-
-Empresa: ${data.empresa}
-
-Tarefa:
-1. Identifique se é um segmento/área de negócio válido
-2. Normalize para formato claro (ex: "Tecnologia", "Varejo", "Saúde")
-3. Se muito vago, peça mais especificidade
-
-Responda APENAS neste formato JSON:
-{"isValid": true/false, "normalizedValue": "segmento normalizado", "feedback": "mensagem se inválido"}
-`,
-      faturamento: `
-Analise esta resposta sobre faturamento anual: "${userInput}"
-
-Empresa: ${data.empresa}
-
-Tarefa:
-1. Extraia o valor numérico (aceite aproximações como "cerca de 2 milhões")
-2. Normalize para formato com R$ (ex: "R$ 2.000.000", "R$ 500.000")
-3. Se não for possível extrair valor, peça esclarecimento
-
-Responda APENAS neste formato JSON:
-{"isValid": true/false, "normalizedValue": "R$ valor", "feedback": "mensagem se inválido"}
-
-Exemplos válidos: "2 milhões", "500k", "aproximadamente 1.5M", "R$ 800.000"
-`,
-      colaboradores: `
-Analise esta resposta sobre número de colaboradores: "${userInput}"
-
-Empresa: ${data.empresa}
-
-Tarefa:
-1. Extraia o número de funcionários (aceite aproximações como "uns 50")
-2. Normalize para número (ex: "50", "120")
-3. Se não conseguir extrair número, peça esclarecimento
-
-Responda APENAS neste formato JSON:
-{"isValid": true/false, "normalizedValue": "número", "feedback": "mensagem se inválido"}
-
-Exemplos válidos: "50 pessoas", "aproximadamente 100", "entre 80 e 90", "120"
-`
-    };
-
-    try {
-      const prompt = prompts[step];
-      if (!prompt) {
-        return { isValid: true, normalizedValue: userInput };
-      }
-
-      const response = await sendMessageToGemini(prompt);
-      
-      // Tenta fazer parse da resposta JSON
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        
-        // Se for telefone e a IA não conseguiu normalizar, faz manualmente
-        if (step === 'telefone' && parsed.isValid && !parsed.normalizedValue) {
-          parsed.normalizedValue = normalizarTelefone(userInput);
-        }
-        
-        return {
-          isValid: parsed.isValid,
-          normalizedValue: parsed.normalizedValue || userInput,
-          feedback: parsed.feedback
-        };
-      }
-
-      // Fallback: se for telefone, tenta normalizar manualmente
-      if (step === 'telefone') {
-        return { isValid: true, normalizedValue: normalizarTelefone(userInput) };
-      }
-
-      return { isValid: true, normalizedValue: userInput };
-    } catch (error) {
-      console.error('Erro ao interpretar resposta:', error);
-      
-      // Fallback: se for telefone, tenta normalizar manualmente
-      if (step === 'telefone') {
-        return { isValid: true, normalizedValue: normalizarTelefone(userInput) };
-      }
-      return { isValid: true, normalizedValue: userInput };
-    }
-  };
-
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isTyping || leadBlocked) return;
 
@@ -324,18 +366,27 @@ Exemplos válidos: "50 pessoas", "aproximadamente 100", "entre 80 e 90", "120"
     // NOVA LÓGICA: Interpreta a resposta com IA primeiro
     const interpretation = await interpretUserResponse(currentKey, userMessage, userData);
 
-    // Se a IA detectou problema, mostra feedback
+    // Se detectou problema, mostra feedback
     if (!interpretation.isValid && interpretation.feedback) {
       setMessages(prev => [...prev, { role: 'bot', content: interpretation.feedback || 'Por favor, tente novamente.' }]);
       setIsTyping(false);
+      
+      // Se deve bloquear o lead (fora do ICP)
+      if (interpretation.shouldBlock) {
+        setLeadBlocked(true);
+      }
+      
       return;
     }
 
-    // Usa o valor normalizado pela IA
+    // Usa o valor normalizado
     const normalizedValue = interpretation.normalizedValue;
 
     // Validação do campo atual com valor normalizado
-    const validation = validateField(currentKey, normalizedValue);
+    // Nota: Colaboradores já foi validado completamente no interpretUserResponse
+    const validation = currentKey === 'colaboradores' 
+      ? { isValid: true } 
+      : validateField(currentKey, normalizedValue);
     
     if (!validation.isValid) {
       setMessages(prev => [...prev, { role: 'bot', content: validation.message || 'Por favor, tente novamente.' }]);
@@ -362,8 +413,9 @@ Exemplos válidos: "50 pessoas", "aproximadamente 100", "entre 80 e 90", "120"
 
     setUserData(newUserData);
 
-    // Aguarda 2 segundos (simulando digitação)
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Aguarda tempo variável baseado no campo (colaboradores é mais rápido)
+    const delayTime = currentKey === 'colaboradores' ? 800 : 2000;
+    await new Promise(resolve => setTimeout(resolve, delayTime));
 
     // Próxima pergunta
     const nextStep = currentStep + 1;
