@@ -35,7 +35,7 @@ export function ChatBot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'bot' as const,
-      content: 'Oi! 👋\n\nEmpresas que usam IA estrategicamente estão reduzindo custos em até 40% e aumentando faturamento sem contratar mais.\n\nQuer descobrir como isso pode transformar seu negócio?\n\nPra começar, qual seu nome completo?'
+      content: 'Olá! 👋\n\nQuero entender um pouco do seu contexto para te ajudar a desenhar a melhor estratégia para sua empresa, pensando em crescimento e otimização de custos.\n\nAssumimos toda a complexidade técnica e operacional para você focar no que importa: resultados.\n\nPara começar, qual seu nome completo?'
     }
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -171,31 +171,6 @@ export function ChatBot() {
     feedback?: string 
   }> => {
     const prompts: Record<string, string> = {
-      nomeCompleto: `
-Analise esta resposta de nome completo: "${userInput}"
-
-A pessoa respondeu à pergunta sobre NOME COMPLETO (nome e sobrenome).
-
-Tarefa:
-1. Verifique se há pelo menos nome e sobrenome (mínimo 2 palavras)
-2. Corrija capitalização: cada palavra deve começar com maiúscula
-3. Remova números, caracteres especiais ou emojis
-4. Se for apenas um nome (sem sobrenome), peça o nome completo
-5. Se for texto aleatório sem sentido, peça para digitar o nome novamente
-
-IMPORTANTE: Corrija nomes com capitalização errada automaticamente:
-- "joão silva" → "João Silva" ✅
-- "MARIA SANTOS" → "Maria Santos" ✅
-- "pedro DE oliveira" → "Pedro de Oliveira" ✅
-- "ana" → INVÁLIDO (apenas um nome) ❌
-- "123 teste" → INVÁLIDO (não é um nome) ❌
-
-Responda APENAS neste formato JSON:
-{"isValid": true, "normalizedValue": "Nome Completo Corrigido", "feedback": ""}
-
-Se inválido:
-{"isValid": false, "normalizedValue": "", "feedback": "Por favor, digite seu nome completo (nome e sobrenome). Exemplo: João Silva"}
-`,
       telefone: `
 Analise esta resposta de telefone: "${userInput}"
 
@@ -460,26 +435,8 @@ Exemplos válidos: "50 pessoas", "aproximadamente 100", "entre 80 e 90", "120"
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-4 max-w-full justify-end">
-                <div className="bg-white text-[#1e293b] rounded-[20px] py-4 px-6 shadow-lg max-w-[80%] break-words">
-                  {message.content}
-                </div>
-                <div className="w-[50px] h-[50px] rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="24" 
-                    height="24" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="white" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  >
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                </div>
+              <div className="bg-white text-[#1e293b] rounded-[20px] py-4 px-6 shadow-lg max-w-[80%] break-words">
+                {message.content}
               </div>
             )}
           </div>
@@ -507,12 +464,21 @@ Exemplos válidos: "50 pessoas", "aproximadamente 100", "entre 80 e 90", "120"
 
         {/* Calendly */}
         {showCalendly && (
-          <div className="w-full max-w-[800px] mt-8 mx-auto">
-            <div 
-              className="calendly-inline-widget rounded-lg overflow-hidden shadow-2xl" 
-              data-url={`https://calendly.com/d/ctgw-sm7-283/chatvolt-reuniao-comercial?hide_gdpr_banner=1&primary_color=A556F7&text_color=1e293b&first_name=${encodeURIComponent(userData.nome)}&last_name=${encodeURIComponent(userData.sobrenome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(userData.telefone)}&a2=${encodeURIComponent(`Empresa: ${userData.empresa} | Segmento: ${userData.segmento} | Faturamento: ${userData.faturamento} | Colaboradores: ${userData.colaboradores}`)}`}
-              style={{ minWidth: '320px', height: '700px', width: '100%' }}
+          <div className="flex items-start gap-4 max-w-full w-full">
+            <Image
+              src="/logo.png"
+              alt="Chatvolt"
+              width={50}
+              height={50}
+              className="rounded-full flex-shrink-0"
             />
+            <div className="bg-[#1e293b] rounded-lg shadow-lg overflow-hidden flex-1">
+              <div 
+                className="calendly-inline-widget" 
+                data-url={`https://calendly.com/d/ctgw-sm7-283/chatvolt-reuniao-comercial?hide_gdpr_banner=1&primary_color=A556F7&text_color=1e293b&first_name=${encodeURIComponent(userData.nome)}&last_name=${encodeURIComponent(userData.sobrenome)}&email=${encodeURIComponent(userData.email)}&a1=${encodeURIComponent(userData.telefone)}&a2=${encodeURIComponent(`Empresa: ${userData.empresa} | Segmento: ${userData.segmento} | Faturamento: ${userData.faturamento} | Colaboradores: ${userData.colaboradores}`)}`}
+                style={{ minWidth: '320px', height: '700px', width: '100%' }}
+              />
+            </div>
           </div>
         )}
 
